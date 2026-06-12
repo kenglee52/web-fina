@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    image: iquri/fina-website:latest
+    container_name: fina-frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped

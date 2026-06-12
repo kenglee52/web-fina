@@ -1,0 +1,88 @@
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { LanguageContext } from "@/LayOut/Main_layout";
+import translations from "../../data/translations";
+
+const Slie_iconPartner = () => {
+  const images = import.meta.glob("/public/partner/*.{png,jpg,jpeg}", { eager: true });
+  const icons = Object.values(images).map((mod) => mod.default);
+  const { language } = useContext(LanguageContext);
+
+  const numIcons = icons.length;
+  const angleIncrement = 360 / numIcons;
+  const ellipseRadius = 550;
+
+  const [rotation, setRotation] = useState(0); // เก็บ rotation ปัจจุบัน
+
+  // หมุนเรื่อย ๆ ด้วย requestAnimationFrame
+  useEffect(() => {
+ let frame;
+
+    const animate = () => {
+      setRotation((prev) => (prev + 0.2) % 360); // หมุนช้า ๆ 0.2deg ต่อ frame
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <div className="relative py-1 bg-blue-50/50">
+      {/* Title */}
+      <div className="mb-1">
+        <h2 className="text-4xl font-extrabold text-center mb-4">
+          <span className="text-blue-900">{translations[language].bpc.split(" ")[0]}</span>
+          <span className="text-orange-500">
+            {" "}{translations[language].bpc.split(" ").slice(1).join(" ")}
+          </span>
+        </h2>
+      </div>
+
+      {/* 3D Elliptical Carousel */}
+      <div className="relative mx-auto h-[350px] overflow-hidden" style={{ width: `${ellipseRadius * 2}px` }}>
+        <div
+          className="w-full h-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          style={{ perspective: "1000px" }}
+        >
+          <div
+            className="w-full h-full relative mx-auto"
+            style={{
+              transform: `rotateY(${rotation}deg)`,
+              transformStyle: "preserve-3d",
+            }}
+          >
+            {icons.map((src, i) => {
+              const angle = i * angleIncrement;
+              const finalAngle = angle + rotation; // คำนวณมุมจริงตอนหมุน
+
+              const transformStyle = `
+                rotateY(${angle}deg)
+                translateZ(${ellipseRadius * 0.8}px)
+                translateX(100px)
+              `;
+
+              const depth = Math.cos(finalAngle * (Math.PI / 180));
+
+              return (
+                <img
+                  key={i}
+                  src={src}
+                  alt={`partner-icon-${i}`}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-auto object-contain transition-all duration-500"
+                  style={{
+                    transform: transformStyle,
+                    backfaceVisibility: "hidden",
+                    opacity: depth > 0 ? 1 : 0.3,
+                    filter: depth > 0 ? "blur(0px)" : "blur(3px)",
+                    zIndex: depth > 0 ? 10 : 1,
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Slie_iconPartner;
