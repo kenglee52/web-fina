@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, createContext } from "react";
-import { NavLink, Outlet, Link } from "react-router-dom";
-import { Menu, X, MessageCircleMore, Instagram, Phone } from "lucide-react";
+import { NavLink, Outlet, Link, useLocation } from "react-router-dom";
+import { Menu, X, MessageCircleMore, Phone, CreditCard, ChevronDown } from "lucide-react";
 import DownloadButtons from "../componet/navbar_main/DownloadButtons";
 import translations from "../data/translations";
 import {
@@ -42,8 +42,6 @@ const dropdownItems = (language) => ({
   news: [
     { to: "/news/event", label: translations[language].news_event },
     { to: "/promotion", label: translations[language].promotion },
-
-    // { to: "/news/event", label: translations[language].archive },
   ],
   support: [
     { to: "/support/faq", label: translations[language].faq },
@@ -51,8 +49,6 @@ const dropdownItems = (language) => ({
   ],
   Digital_Lending: [
     { to: "/personal_loan", label: translations[language].personalLoan },
-    // { to: "/Digital_Lending/002", label: translations[language].carLoan },
-    // { to: "/Digital_Lending/003", label: translations[language].housingLoan },
     { to: "/comingsoon", label: translations[language].smeLoan },
     { to: "/comingsoon", label: translations[language].groupLending },
   ],
@@ -65,7 +61,6 @@ const dropdownItems = (language) => ({
 
 // Map nav items to images
 const navItemImages = {
-
   production: "/hii.jpeg",
   Digital_Lending: "/hii.jpeg",
   Payment_Transfer: "/hii.jpeg",
@@ -75,42 +70,34 @@ const navItemImages = {
 
 // Map sub-items to images using full routes
 const subItemImages = {
-  // Production
   "/saving_account": "/production/p001.jpeg",
   "/services": "/hii.jpeg",
   "/production/PFMFH": "/production/p003.jpeg",
   "/fixed_deposits": "/production/p002.jpeg",
-  // News
   "/news/event": "/production/new.jpeg",
   "/promotion": "/hii.jpeg",
-  // Support
   "/support/faq": "/suppoet02.jpeg",
   "/support/contactus": "/suppoet03.jpeg",
-  // Digital Lending
   "/personal_loan": "/production/d001.jpeg",
   "/Digital_Lending/002": "/archive.jpg",
   "/Digital_Lending/003": "/housing.jpg",
   "/comingsoon": "/production/p003.jpeg",
   "/comingsoon/005": "/production/p003.jpeg",
-  // Payment Transfer
   "/fund_tarnsfer": "/production/pt002.jpeg",
   "/payment": "/production/ot003.jpeg",
   "/fina_agent": "/production/pt001.jpeg",
 };
 
-// Fallback image for error handling
 const FALLBACK_IMAGE = "/placeholder.jpg";
 
 const Main_layout = () => {
+  const location = useLocation(); // ເພີ່ມ useLocation ເຂົ້າມາເພື່ອກວດສອບ Active Menu
   const [language, setLanguage] = useState("lao");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [hoveredSubItem, setHoveredSubItem] = useState(null);
 
-  // Memoize dropdownItems to prevent re-creation on every render
   const memoizedDropdownItems = useMemo(() => dropdownItems(language), [language]);
-
-  // Memoize context value to prevent unnecessary re-renders
   const languageContextValue = useMemo(() => ({ language, setLanguage }), [language]);
 
   useEffect(() => {
@@ -122,348 +109,381 @@ const Main_layout = () => {
     });
   }, []);
 
-  const mainNavItems = [
-    { to: "/about", label: translations[language].about },
-    { to: "/production", label: translations[language].production },
-    { to: "/Digital_Lending", label: translations[language].Digital_Lending },
-    { to: "/Payment_Transfer", label: translations[language].Payment_Transfer },
-    { to: "/news", label: translations[language].news },
-    { to: "/support", label: translations[language].support },
-    { to: "/careers", label: translations[language].careers },
+  const handleLanguageChange = (value) => setLanguage(value);
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  // --- Menu Configurations ---
+  // Primary Menus (Shown in Main Navigation Bar with Mega Menu)
+  const primaryMenus = [
+    { id: "production", to: "/production", label: language === "lao" ? "ຜະລິດຕະພັນ ແລະ ບໍລິການ" : translations[language].production },
+    { id: "Digital_Lending", to: "/Digital_Lending", label: language === "lao" ? "ເງິນກູ້ດີຈີຕ໋ອນ" : translations[language].Digital_Lending },
+    { id: "Payment_Transfer", to: "/Payment_Transfer", label: language === "lao" ? "ການຈ່າຍ ແລະ ການໂອນ" : translations[language].Payment_Transfer },
   ];
 
-  const dropdownNavItems = mainNavItems.filter(
-    (item) => item.to !== "/about" && item.to !== "/careers"
-  );
-
-  const handleLanguageChange = (value) => {
-    setLanguage(value);
-  };
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  // Secondary Menus (Shown in Top Bar)
+  const secondaryMenus = [
+    { id: "news", to: "/news", label: language === "lao" ? "ຂ່າວສານ" : translations[language].news, isDropdown: true },
+    { id: "about", to: "/about", label: language === "lao" ? "ກ່ຽວກັບ ສຟນ" : translations[language].about, isDropdown: false },
+    { id: "support", to: "/support", label: language === "lao" ? "ຊ່ວຍເຫຼືອ" : translations[language].support, isDropdown: true },
+    { id: "careers", to: "/careers", label: language === "lao" ? "ສະໝັກວຽກກັບ ສຟນ" : translations[language].careers, isDropdown: false },
+  ];
 
   return (
     <LanguageContext.Provider value={languageContextValue}>
-      <div className="flex flex-col min-h-screen font-noto-sans-lao bg-white">
-        {/* Top Navigation Bar */}
-        <nav role="navigation" className="fixed top-0 left-0 w-full bg-white text-blue-900 z-50 h-20">
-          <div className="container mx-auto px-2 sm:px-4 flex items-center justify-between h-full">
-            {/* Logo on the left */}
-            <div className="flex-shrink-0 mr-2 sm:mr-4">
-              <Link to="/">
-                <img
-                  src="/fina-logo-color.png"
-                  alt="FINA Logo"
-                  className="w-12 h-12 sm:w-16 sm:h-16 object-contain cursor-pointer"
-                />
-              </Link>
-            </div>
-
-            {/* Main Navigation Links (Visible on larger screens) */}
-            <div className="hidden lg:flex items-center space-x-6">
-              {/* Standalone About Link */}
-              <NavLink
-                to="/about"
-                end
-                role="tab"
-                className={({ isActive }) =>
-                  `text-base font-bold px-3 py-2 rounded-lg transition-all duration-200 ${isActive
-                    ? " text-orange-500 "
-                    : "text-blue-900 hover:text-orange-500 hover:text-lg hover:bg-blue-100"
-                  }`
-                }
-                aria-label={translations[language].about}
-              >
-                {translations[language].about}
-              </NavLink>
-
-              {/* Navigation Menu with Dropdowns */}
-              <NavigationMenu>
-                <NavigationMenuList className="flex space-x-2">
-                  {dropdownNavItems.map((navItem) => (
-                    <NavigationMenuItem key={navItem.to}>
-                      <NavigationMenuTrigger
-                        className="bg-white text-blue-900 hover:bg-blue-100 hover:text-orange-500 text-base font-bold px-4 py-3 rounded-lg transition-all duration-200 hover:scale-105"
-                        aria-label={navItem.label}
-                      >
-                        {navItem.label}
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent className="w-screen lg:w-[1300px] bg-white/20 backdrop-blur-lg">
-                        <div className="flex gap-0 p-0 rounded-xl shadow-xl border border-orange-400/50 overflow-hidden">
-                          {/* Text Section */}
-                          <div
-                            data-aos="fade-left"
-                            className="w-1/4 p-6 border-r border-gray-300/50 bg-white/10 backdrop-blur-md"
+      <div className="flex flex-col min-h-screen font-noto-sans-lao bg-slate-50">
+        
+        {/* Fixed Header Wrapper */}
+        <header className="fixed top-0 left-0 w-full z-50 shadow-sm transition-all duration-300 flex flex-col">
+          
+          {/* Top Bar - Secondary Navigation (Hidden on Mobile) */}
+          <div className="hidden lg:flex bg-slate-100 border-b border-gray-200 h-10 w-full items-center">
+            <div className="container mx-auto px-4 flex justify-end items-center space-x-6">
+              {secondaryMenus.map((menu) =>
+                menu.isDropdown ? (
+                  <div key={menu.id} className="relative group">
+                    <button className="flex items-center text-md font-medium text-gray-600 hover:text-orange-500 transition-colors py-2">
+                      {menu.label} <ChevronDown size={14} className="ml-1" />
+                    </button>
+                    {/* Standard Dropdown for Top Bar */}
+                    <div className="absolute top-full right-0 w-48 bg-white rounded-lg shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 transform origin-top-right group-hover:translate-y-0 translate-y-2">
+                      <div className="py-2 flex flex-col">
+                        {memoizedDropdownItems[menu.id].map((subItem) => (
+                          <NavLink
+                            key={subItem.to}
+                            to={subItem.to}
+                            className={({ isActive }) =>
+                              `px-4 py-2 text-md transition-colors ${
+                                isActive
+                                  ? "bg-orange-50 text-orange-500 font-bold border-l-2 border-orange-500"
+                                  : "text-gray-600 hover:bg-slate-50 hover:text-orange-500"
+                              }`
+                            }
                           >
-                            <h2 className="text-lg font-bold text-blue-900 mb-4 font-noto-sans-lao">
-                              {navItem.label}
-                            </h2>
-                            <ul className="grid gap-2">
-                              {memoizedDropdownItems[navItem.to.replace("/", "")].map((subItem) => (
-                                <li
-                                  key={subItem.to}
-                                  onMouseEnter={() => setHoveredSubItem(subItem.to)}
-                                  onMouseLeave={() => setHoveredSubItem(null)}
-                                >
-                                  <NavigationMenuLink asChild>
-                                    <NavLink
-                                      to={subItem.to}
-                                      end
-                                      className={({ isActive }) =>
-                                        `group block text-sm font-semibold px-3 py-2 rounded-md transition-all duration-200 ${isActive
-                                          ? "bg-gradient-to-r hover:text-lg from-orange-500 to-orange-600 text-blue-900 shadow-md"
-                                          : "text-blue-900 hover:text-orange-500 hover:bg-blue-100 hover:font-bold"
-                                        }`
-                                      }
-                                    >
-                                      {subItem.label}
-                                    </NavLink>
-                                  </NavigationMenuLink>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          {/* Image Section */}
-                          <div
-                            data-aos="fade-right"
-                            className="flex-1 p-6 flex items-center justify-start rounded-xl relative overflow-hidden"
-                          >
-                            {/* Background image + blur */}
-                            <div
-                              className="absolute inset-0 bg-cover bg-center backdrop-blur-lg opacity-30"
-                              style={{
-                                backgroundImage: `url(${hoveredSubItem && subItemImages[hoveredSubItem]
-                                    ? subItemImages[hoveredSubItem]
-                                    : navItemImages[navItem.to.replace("/", "")] || FALLBACK_IMAGE
-                                  })`,
-                              }}
-                            ></div>
-
-                            {/* Foreground content */}
-                            <div className="relative p-4 rounded-3xl bg-white/20 backdrop-blur-md border border-white/30 shadow-lg flex items-center justify-center">
-                              <img
-                                src={
-                                  hoveredSubItem && subItemImages[hoveredSubItem]
-                                    ? subItemImages[hoveredSubItem]
-                                    : navItemImages[navItem.to.replace("/", "")] || FALLBACK_IMAGE
-                                }
-                                alt={`${hoveredSubItem
-                                  ? memoizedDropdownItems[navItem.to.replace("/", "")].find(
-                                    (sub) => sub.to === hoveredSubItem
-                                  )?.label || "Sub-item"
-                                  : navItem.label
-                                  } illustration`}
-                                className="max-w-[150px] w-auto h-auto object-contain rounded-3xl"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  ))}
-                </NavigationMenuList>
-              </NavigationMenu>
-
-              {/* Standalone Careers Link */}
-              <NavLink
-                to="/careers"
-                end
-                role="tab"
-                className={({ isActive }) =>
-                  `text-base font-bold px-3 py-2 rounded-lg transition-all duration-200 ${isActive
-                    ? " text-orange-500 "
-                    : "text-blue-900 hover:text-orange-500 hover:text-lg hover:bg-blue-100"
-                  }`
-                }
-                aria-label={translations[language].careers}
-              >
-                {translations[language].careers}
-              </NavLink>
-            </div>
-
-            {/* Language Selector and Mobile Menu Toggle */}
-            <div className="flex items-center space-x-2 sm:space-x-4 ml-auto">
-              <div className="w-20 sm:w-20">
-                <Select value={language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger className="bg-white text-blue-900 border-none rounded-lg focus:ring-2 focus:ring-orange-500 py-1 px-2 text-xs sm:text-sm">
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-orange-500 rounded-lg">
-                    {languageOptions.map((option) => (
-                      <SelectItem
-                        key={option.value}
-                        value={option.value}
-                        className="flex items-center gap-2 text-blue-900 hover:bg-orange-100 focus:bg-orange-100 text-xs sm:text-sm"
-                      >
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={option.flag}
-                            alt={option.label}
-                            className="w-4 h-auto sm:w-5"
-                          />
-                          <span>{option.label}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <button
-                onClick={toggleMenu}
-                className="lg:hidden p-3 text-blue-900 hover:text-orange-500 focus:outline-none z-50"
-                aria-label="Toggle mobile menu"
-              >
-                {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-              </button>
+                            {subItem.label}
+                          </NavLink>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <NavLink
+                    key={menu.id}
+                    to={menu.to}
+                    className={({ isActive }) =>
+                      `text-md font-medium transition-colors py-2 ${
+                        isActive ? "text-orange-500 font-bold" : "text-gray-600 hover:text-orange-500"
+                      }`
+                    }
+                  >
+                    {menu.label}
+                  </NavLink>
+                )
+              )}
             </div>
           </div>
-        </nav>
+
+          {/* Main Navigation Bar */}
+          <nav role="navigation" className="w-full bg-white text-blue-900 h-20 shadow-md lg:shadow-none">
+            <div className="container mx-auto px-2 sm:px-4 flex items-center justify-between h-full">
+              
+              {/* Logo */}
+              <div className="flex-shrink-0 mr-2 sm:mr-4">
+                <Link to="/">
+                  <img
+                    src="/fina-logo-color.png"
+                    alt="SFC Logo"
+                    className="w-12 h-12 sm:w-16 sm:h-16 object-contain cursor-pointer"
+                  />
+                </Link>
+              </div>
+
+              {/* Main Primary Links (Mega Menu) */}
+              <div className="hidden lg:flex items-center space-x-2">
+                <NavigationMenu>
+                  <NavigationMenuList className="flex space-x-1">
+                    {primaryMenus.map((navItem) => (
+                      <NavigationMenuItem key={navItem.id}>
+                        <NavigationMenuTrigger
+                          className="bg-transparent text-blue-900 hover:bg-blue-50 hover:text-orange-500 text-[17px] font-bold px-4 py-3 rounded-lg transition-all duration-200"
+                          aria-label={navItem.label}
+                        >
+                          {navItem.label}
+                        </NavigationMenuTrigger>
+                        <NavigationMenuContent className="w-screen lg:w-[1200px] bg-white/40 backdrop-blur-xl">
+                          <div className="flex gap-0 p-0 rounded-xl shadow-2xl border border-orange-200 overflow-hidden bg-white/80">
+                            
+                            {/* Text Section */}
+                            <div className="w-1/3 p-6 border-r border-gray-200/50">
+                              <h2 className="text-xl font-bold text-blue-900 mb-4 border-b border-gray-200 pb-2">
+                                {navItem.label}
+                              </h2>
+                              <ul className="grid gap-2">
+                                {memoizedDropdownItems[navItem.id].map((subItem) => {
+                                  // ກວດສອບ Active state ດ້ວຍ useLocation ແທນ NavLink function
+                                  const isActive = location.pathname === subItem.to;
+                                  
+                                  return (
+                                    <li
+                                      key={subItem.to}
+                                      onMouseEnter={() => setHoveredSubItem(subItem.to)}
+                                      onMouseLeave={() => setHoveredSubItem(null)}
+                                    >
+                                      <NavigationMenuLink asChild>
+                                        <Link
+                                          to={subItem.to}
+                                          className={`group block text-sm font-semibold px-4 py-3 rounded-lg transition-all duration-200 ${
+                                            isActive
+                                              ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md"
+                                              : "text-blue-900 hover:bg-blue-50 hover:text-orange-500"
+                                          }`}
+                                        >
+                                          {subItem.label}
+                                        </Link>
+                                      </NavigationMenuLink>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+
+                            {/* Image Section */}
+                            <div className="flex-1 p-6 flex items-center justify-center relative overflow-hidden bg-slate-50">
+                              <div
+                                className="absolute inset-0 bg-cover bg-center opacity-10 transition-all duration-500"
+                                style={{
+                                  backgroundImage: `url(${
+                                    hoveredSubItem && subItemImages[hoveredSubItem]
+                                      ? subItemImages[hoveredSubItem]
+                                      : navItemImages[navItem.id] || FALLBACK_IMAGE
+                                  })`,
+                                }}
+                              />
+                              <div className="relative p-2 rounded-2xl bg-white shadow-xl border border-gray-100 flex items-center justify-center transform transition-transform duration-300 hover:scale-105">
+                                <img
+                                  src={
+                                    hoveredSubItem && subItemImages[hoveredSubItem]
+                                      ? subItemImages[hoveredSubItem]
+                                      : navItemImages[navItem.id] || FALLBACK_IMAGE
+                                  }
+                                  alt="Menu illustration"
+                                  className="max-w-[200px] w-auto h-auto object-contain rounded-xl"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </NavigationMenuContent>
+                      </NavigationMenuItem>
+                    ))}
+                  </NavigationMenuList>
+                </NavigationMenu>
+              </div>
+
+              {/* Right Side Controls */}
+              <div className="flex items-center space-x-3 ml-auto">
+                
+                {/* Apply Card Button (Desktop) ປ່ຽນລິ້ງມາເປັນ /visa-apply ແລ້ວ */}
+                <Link
+                  to="/visa-apply"
+                  className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
+                >
+                  <CreditCard size={18} />
+                  <span>{language === "lao" ? "ສະໝັກບັດ" : "Apply Card"}</span>
+                </Link>
+
+                {/* Language Selector */}
+                <div className="w-20">
+                  <Select value={language} onValueChange={handleLanguageChange}>
+                    <SelectTrigger className="bg-slate-100 text-blue-900 border-none rounded-lg focus:ring-2 focus:ring-orange-500 py-1 px-2 text-xs sm:text-sm font-semibold">
+                      <SelectValue placeholder="Lang" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-gray-200 rounded-lg shadow-xl">
+                      {languageOptions.map((option) => (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}
+                          className="flex items-center gap-2 text-blue-900 hover:bg-orange-50 text-xs sm:text-sm cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <img src={option.flag} alt={option.label} className="w-5 h-auto rounded-sm shadow-sm" />
+                            <span>{option.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Mobile Menu Toggle */}
+                <button
+                  onClick={toggleMenu}
+                  className="lg:hidden p-2 text-blue-900 hover:bg-blue-50 rounded-lg transition-colors focus:outline-none z-50"
+                  aria-label="Toggle mobile menu"
+                >
+                  {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+                </button>
+              </div>
+            </div>
+          </nav>
+        </header>
 
         {/* Mobile Menu Overlay */}
         {isMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={toggleMenu}
-            aria-label="Close menu"
-          ></div>
+          <div className="fixed inset-0 bg-blue-900/40 backdrop-blur-sm z-40 lg:hidden" onClick={toggleMenu} aria-label="Close menu" />
         )}
 
         {/* Mobile Menu Panel */}
         <div
-          className={`lg:hidden fixed top-0 right-0 h-full w-64 sm:w-80 bg-white/30 backdrop-blur-md shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? "translate-x-0" : "translate-x-full"
-            }`}
+          className={`lg:hidden fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+            isMenuOpen ? "translate-x-0" : "translate-x-full"
+          } overflow-hidden flex flex-col`}
         >
-          <button
-            onClick={toggleMenu}
-            className="absolute top-4 right-4 text-blue-900 hover:text-orange-500 focus:outline-none z-60 p-2 rounded-full hover:bg-blue-100"
-            aria-label="Close mobile menu"
-          >
-            <X size={28} />
-          </button>
-          <div className="flex flex-col p-4 pt-20 h-full overflow-y-auto bg-white">
-            <NavLink
-              to="/about"
+          <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <span className="text-lg font-bold text-blue-900">ເມນູ</span>
+            <button onClick={toggleMenu} className="p-2 text-gray-500 hover:text-orange-500 bg-gray-50 rounded-full">
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            
+            {/* Primary Menus (Mobile) */}
+            <div className="space-y-1">
+              {primaryMenus.map((menu) => (
+                <details key={menu.id} className="group">
+                  <summary className="cursor-pointer text-[15px] font-bold px-4 py-3 rounded-lg text-blue-900 bg-slate-50 hover:bg-orange-50 hover:text-orange-600 transition-colors list-none flex justify-between items-center">
+                    {menu.label}
+                    <ChevronDown size={16} className="text-gray-400 group-open:rotate-180 transition-transform" />
+                  </summary>
+                  <div className="pl-4 pr-2 py-2 space-y-1 border-l-2 border-orange-100 ml-4 mt-1">
+                    {memoizedDropdownItems[menu.id].map((subItem) => (
+                      <NavLink
+                        key={subItem.to}
+                        to={subItem.to}
+                        onClick={toggleMenu}
+                        className={({ isActive }) =>
+                          `block text-sm font-medium px-3 py-2 rounded-md transition-colors ${
+                            isActive ? "bg-orange-500 text-white" : "text-gray-600 hover:bg-orange-50 hover:text-orange-500"
+                          }`
+                        }
+                      >
+                        {subItem.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </details>
+              ))}
+            </div>
+
+            <hr className="border-gray-200 my-4" />
+
+            {/* Secondary Menus (Mobile) */}
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-2">ອື່ນໆ</p>
+              {secondaryMenus.map((menu) =>
+                menu.isDropdown ? (
+                  <details key={menu.id} className="group">
+                    <summary className="cursor-pointer text-sm font-semibold px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors list-none flex justify-between items-center">
+                      {menu.label}
+                      <ChevronDown size={14} className="text-gray-400 group-open:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="pl-4 pr-2 py-1 space-y-1 border-l-2 border-gray-200 ml-4 mt-1">
+                      {memoizedDropdownItems[menu.id].map((subItem) => (
+                        <NavLink
+                          key={subItem.to}
+                          to={subItem.to}
+                          onClick={toggleMenu}
+                          className={({ isActive }) =>
+                            `block text-sm px-3 py-2 rounded-md transition-colors ${
+                              isActive ? "text-orange-500 font-bold" : "text-gray-500 hover:text-orange-500"
+                            }`
+                          }
+                        >
+                          {subItem.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  </details>
+                ) : (
+                  <NavLink
+                    key={menu.id}
+                    to={menu.to}
+                    onClick={toggleMenu}
+                    className={({ isActive }) =>
+                      `block text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors ${
+                        isActive ? "text-orange-500 bg-orange-50" : "text-gray-700 hover:bg-gray-100"
+                      }`
+                    }
+                  >
+                    {menu.label}
+                  </NavLink>
+                )
+              )}
+            </div>
+
+            {/* Apply Card Button (Mobile) ປ່ຽນລິ້ງມາເປັນ /visa-apply ແລ້ວ */}
+            <Link
+              to="/visa-apply"
               onClick={toggleMenu}
-              className={({ isActive }) =>
-                `text-base font-bold px-4 py-3 rounded-lg transition-all duration-200 ${isActive ? "bg-orange-500 text-white" : "text-blue-900 hover:text-orange-500 hover:bg-blue-100"
-                }`
-              }
+              className="mt-6 flex justify-center items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3.5 rounded-xl font-bold shadow-md active:scale-95 transition-transform"
             >
-              {translations[language].about}
-            </NavLink>
+              <CreditCard size={20} />
+              {language === "lao" ? "ສະໝັກບັດດຽວນີ້" : "Apply Card Now"}
+            </Link>
 
-            {dropdownNavItems.map((navItem) => (
-              <details key={navItem.to} className="mb-2">
-                <summary className="cursor-pointer text-base font-bold px-4 py-3 rounded-lg text-blue-900 hover:text-orange-500 hover:bg-blue-100">
-                  {navItem.label}
-                </summary>
-                <div className="pl-6 flex flex-col">
-                  {memoizedDropdownItems[navItem.to.replace("/", "")].map((subItem) => (
-                    <NavLink
-                      to={subItem.to}
-                      onClick={toggleMenu}
-                      className={({ isActive }) =>
-                        `text-sm font-semibold px-3 py-2 rounded-md transition-all duration-200 ${isActive ? "bg-orange-500 text-white" : "text-blue-900 hover:text-orange-500 hover:bg-blue-100"
-                        }`
-                      }
-                    >
-                      {subItem.label}
-                    </NavLink>
-                  ))}
-                </div>
-              </details>
-            ))}
-
-            <NavLink
-              to="/careers"
-              onClick={toggleMenu}
-              className={({ isActive }) =>
-                `text-base font-bold px-4 py-3 rounded-lg transition-all duration-200 ${isActive ? "bg-orange-500 text-white" : "text-blue-900 hover:text-orange-500 hover:bg-blue-100"
-                }`
-              }
-            >
-              {translations[language].careers}
-            </NavLink>
-
-            <div className="mt-6 mx-auto">
+            <div className="mt-8 mx-auto pb-6">
               <DownloadButtons />
             </div>
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <main className="flex-1 w-full p-0 pt-20">
+        {/* Main Content Area - Padding adjusts for TopBar(40px) + MainNav(80px) on Desktop, only MainNav on Mobile */}
+        <main className="flex-1 w-full p-0 pt-[80px] lg:pt-[120px] bg-white">
           <Outlet />
         </main>
 
-        {/* Footer */}
         <Foot_conten />
 
-        {/* Contact Button with Hover Social Media Icons */}
-        <div className="group fixed bottom-4 right-4 z-50">
+        {/* Floating Contact Buttons */}
+        <div className="group fixed bottom-6 right-6 z-50">
           <button
             onClick={() => setShowChat(!showChat)}
-            className="bg-blue-900 text-white rounded-full p-4 shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            aria-label="Toggle AI Chatbot"
+            className="bg-blue-900 text-white rounded-full p-4 shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-200"
+            aria-label="Toggle Contact Links"
           >
-            <MessageCircleMore size={24} />
+            <MessageCircleMore size={28} />
           </button>
-          <div
-            className="absolute bottom-[60px] right-0 w-[150px] bg-gradient-to-b from-slate-50 to-slate-100 rounded-xl shadow-2xl border border-blue-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform group-hover:scale-100 scale-95 pointer-events-none group-hover:pointer-events-auto"
-          >
-            <div className="flex flex-col gap-2 p-4">
+          <div className="absolute bottom-[70px] right-0 w-[160px] bg-white rounded-xl shadow-2xl border border-gray-100 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-y-0 translate-y-4 pointer-events-none group-hover:pointer-events-auto">
+            <div className="flex flex-col gap-1 p-2">
               <a
                 href="https://m.me/finalaos"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-blue-900 hover:bg-orange-100 hover:text-orange-500 p-2 rounded-md transition-all duration-200 transform hover:scale-110 font-noto-sans-lao"
-                aria-label="Contact via Messenger"
+                className="flex items-center gap-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 p-3 rounded-lg transition-colors font-medium"
               >
-                <MessageCircleMore size={20} />
-                <span className="text-sm font-semibold">Messenger</span>
+                <MessageCircleMore size={20} className="text-blue-600" />
+                <span className="text-sm">Messenger</span>
               </a>
-              {/* <a
-                href="https://instagram.com/yourpage"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-blue-900 hover:bg-orange-100 hover:text-orange-500 p-2 rounded-md transition-all duration-200 transform hover:scale-110 font-noto-sans-lao"
-                aria-label="Contact via Instagram"
-              >
-                <Instagram size={20} />
-                <span className="text-sm font-semibold">Instagram</span>
-              </a> */}
               <a
                 href="https://wa.me/8562055559096"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-blue-900 hover:bg-orange-100 hover:text-orange-500 p-2 rounded-md transition-all duration-200 transform hover:scale-110 font-noto-sans-lao"
-                aria-label="Contact via WhatsApp"
+                className="flex items-center gap-3 text-gray-700 hover:bg-green-50 hover:text-green-600 p-3 rounded-lg transition-colors font-medium"
               >
-                <Phone size={20} />
-                <span className="text-sm font-semibold">WhatsApp</span>
+                <Phone size={20} className="text-green-600" />
+                <span className="text-sm">WhatsApp</span>
               </a>
-
             </div>
           </div>
         </div>
 
-        {/* Back to Top Button for Mobile */}
-        <div
-          className="fixed bottom-0 left-1/4 transform -translate-x-1/2 z-10 block sm:hidden"
-        >
-          <BackToTopButton className="w-16 h-16 rounded-full shadow-lg" />
+        {/* Back to Top Buttons */}
+        <div className="fixed bottom-6 left-1/4 transform -translate-x-1/2 z-40 block sm:hidden">
+          <BackToTopButton className="w-12 h-12 rounded-full shadow-lg bg-white border border-gray-100 text-blue-900" />
         </div>
-
-        {/* Back to Top Button for Desktop */}
-        <div
-          className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 hidden sm:block"
-        >
-          <BackToTopButton className="w-12 h-12 rounded-full shadow-lg" />
+        <div className="fixed bottom-6 left-6 z-40 hidden sm:block">
+          <BackToTopButton className="w-12 h-12 rounded-full shadow-lg bg-white border border-gray-100 text-blue-900 hover:text-orange-500" />
         </div>
+        
       </div>
     </LanguageContext.Provider>
   );

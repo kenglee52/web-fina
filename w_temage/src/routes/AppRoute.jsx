@@ -38,9 +38,13 @@ import Promotion_M from '@/pages/news/Promotion_M';
 import Promotion_ditail from '@/pages/news/Promotion_ditail';
 import Faq_manage from '@/amdin/marketing/page/Faq_manage';
 import Careers_show from '@/componet/careers/Careers_show';
-
+import VisaApply from '@/pages/visa_apply/VisaApply';
 
 const router = createBrowserRouter([
+  {
+    path: "/visa-apply",
+    element: <VisaApply/>
+  },
   {
     path: '/',
     element: < Main_layout/>,
