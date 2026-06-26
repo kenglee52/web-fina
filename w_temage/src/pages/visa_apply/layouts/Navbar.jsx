@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 
 const navLinks = [
-  { name: 'Privilege', href: '#' },
+  { name: 'Privilege', href: '#Privilege' },
   { name: 'Apply Card', href: '#' },
   { name: 'How to use', href: '#' },
 ];
